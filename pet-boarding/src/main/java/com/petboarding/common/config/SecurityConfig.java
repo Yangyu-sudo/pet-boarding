@@ -50,7 +50,7 @@ public class SecurityConfig {
             // Knife4j / Swagger
             .antMatchers("/doc.html", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**").permitAll()
             // 文件访问
-            .antMatchers("/upload/**").permitAll()
+            .antMatchers("/uploads/**").permitAll()
             // 其余接口需要认证
             .anyRequest().authenticated();
 

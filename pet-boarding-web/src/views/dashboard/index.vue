@@ -19,6 +19,16 @@
       </el-col>
     </el-row>
 
+    <!-- 订单状态分布 -->
+    <el-row :gutter="16" style="margin-top: 20px">
+      <el-col :span="24">
+        <el-card>
+          <template #header>订单状态分布</template>
+          <div ref="orderStatusRef" style="height: 300px"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <!-- 图表 -->
     <el-row :gutter="16" style="margin-top: 20px">
       <el-col :span="12">
@@ -34,35 +44,6 @@
         </el-card>
       </el-col>
     </el-row>
-
-    <!-- 订单状态分布 -->
-    <el-row :gutter="16" style="margin-top: 20px">
-      <el-col :span="12">
-        <el-card>
-          <template #header>订单状态分布</template>
-          <div ref="orderStatusRef" style="height: 300px"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card>
-          <template #header>快捷操作</template>
-          <div class="quick-actions">
-            <el-button type="primary" size="large" @click="$router.push('/admin/orders')">
-              <el-icon><Document /></el-icon> 订单管理
-            </el-button>
-            <el-button type="success" size="large" @click="$router.push('/admin/cages')">
-              <el-icon><House /></el-icon> 笼舍管理
-            </el-button>
-            <el-button type="warning" size="large" @click="$router.push('/admin/pets')">
-              <el-icon><Star /></el-icon> 宠物管理
-            </el-button>
-            <el-button type="info" size="large" @click="$router.push('/admin/finance')">
-              <el-icon><Money /></el-icon> 财务管理
-            </el-button>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
   </div>
 </template>
 
@@ -70,7 +51,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { getDashboardStats, getDashboardRevenue } from '@/api/dashboard'
 import * as echarts from 'echarts'
-import { Star, House, Document, Money, DataAnalysis, TrendCharts, PieChart } from '@element-plus/icons-vue'
+import { Star, House, Document, Money } from '@element-plus/icons-vue'
 
 const orderChartRef = ref(null)
 const cageChartRef = ref(null)
@@ -153,6 +134,8 @@ onMounted(async () => {
 .stat-icon { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; }
 .stat-value { font-size: 24px; font-weight: bold; color: #303133; }
 .stat-label { font-size: 13px; color: #909399; margin-top: 4px; }
-.quick-actions { display: flex; flex-wrap: wrap; gap: 16px; }
-.quick-actions .el-button { width: calc(50% - 8px); height: 60px; font-size: 16px; }
+:deep(.el-card__header) {
+  border-left: 3px solid #409eff;
+  padding-left: 12px;
+}
 </style>

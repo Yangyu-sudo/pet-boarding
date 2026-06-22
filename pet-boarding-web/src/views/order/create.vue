@@ -13,21 +13,21 @@
       </el-steps>
 
       <!-- Step 1: 选择宠物 -->
-      <div v-show="step === 0">
+      <div v-show="step === 0" class="pet-select-group">
         <el-empty v-if="pets.length === 0" description="还没有添加宠物，请先添加宠物">
           <el-button type="primary" @click="$router.push('/customer/pets/add')">添加宠物</el-button>
         </el-empty>
-        <el-radio-group v-model="form.petId" class="pet-select-group">
-          <el-row :gutter="16">
-            <el-col :span="8" v-for="pet in pets" :key="pet.id">
-              <div class="pet-option" :class="{ selected: form.petId === pet.id }" @click="form.petId = pet.id">
-                <h4>{{ pet.name }}</h4>
-                <p>{{ pet.type === 'DOG' ? '🐶狗' : pet.type === 'CAT' ? '🐱猫' : '🐾其他' }} | {{ pet.breed || '未知品种' }}</p>
-                <p>{{ pet.age }}个月 | {{ pet.weight }}kg</p>
-              </div>
-            </el-col>
-          </el-row>
-        </el-radio-group>
+        <el-row :gutter="16">
+          <el-col :span="8" v-for="pet in pets" :key="pet.id">
+            <div class="pet-option" :class="{ selected: form.petId === pet.id }" @click="form.petId = pet.id">
+              <img v-if="pet.photo" :src="pet.photo" class="pet-avatar" />
+              <div v-else class="pet-avatar-placeholder">🐾</div>
+              <h4>{{ pet.name }}</h4>
+              <p>{{ pet.type === 'DOG' ? '🐶狗' : pet.type === 'CAT' ? '🐱猫' : '🐾其他' }} | {{ pet.breed || '未知品种' }}</p>
+              <p>{{ formatAge(pet.age) }} | {{ pet.weight }}kg</p>
+            </div>
+          </el-col>
+        </el-row>
       </div>
 
       <!-- Step 2: 选择笼舍 -->
@@ -57,23 +57,22 @@
       </div>
 
       <!-- Step 3: 选择附加服务 -->
-      <div v-show="step === 2">
-        <el-checkbox-group v-model="selectedServiceIds">
-          <el-row :gutter="16">
-            <el-col :span="8" v-for="svc in services" :key="svc.id" style="margin-bottom: 16px">
-              <div
-                class="service-option"
-                :class="{ selected: selectedServiceIds.includes(svc.id) }"
-                @click="toggleService(svc.id)"
-              >
-                <h4>{{ svc.name }}</h4>
-                <p class="price">¥{{ svc.price }}</p>
-                <p>{{ svc.description }}</p>
-                <p v-if="svc.duration">时长：{{ svc.duration }}分钟</p>
-              </div>
-            </el-col>
-          </el-row>
-        </el-checkbox-group>
+      <div v-show="step === 2" class="service-select-group">
+        <el-row :gutter="16">
+          <el-col :span="24" v-for="svc in services" :key="svc.id" style="margin-bottom: 10px">
+            <div
+              class="service-option"
+              :class="{ selected: selectedServiceIds.includes(svc.id) }"
+              @click="toggleService(svc.id)"
+            >
+              <span class="svc-name">{{ svc.name }}</span>
+              <span class="svc-price">¥{{ svc.price }}</span>
+              <span class="svc-desc">{{ svc.description }}</span>
+              <span v-if="svc.duration" class="svc-duration">时长：{{ svc.duration }}分钟</span>
+              <el-icon v-if="selectedServiceIds.includes(svc.id)" class="svc-check"><CircleCheck /></el-icon>
+            </div>
+          </el-col>
+        </el-row>
       </div>
 
       <!-- Step 4: 确认订单 -->
@@ -135,6 +134,7 @@ import { getPetList } from '@/api/pet'
 import { getCageList } from '@/api/cage'
 import { getServiceList } from '@/api/service'
 import { createOrder } from '@/api/order'
+import { CircleCheck } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
 
@@ -189,6 +189,12 @@ function toggleService(id) {
   }
 }
 
+function formatAge(months) {
+  if (months == null) return '-'
+  if (months >= 12 && months % 12 === 0) return (months / 12) + '年'
+  return months + '个月'
+}
+
 function getServiceName(id) {
   const svc = services.value.find(s => s.id === id)
   return svc ? svc.name : ''
@@ -233,7 +239,7 @@ onMounted(async () => {
 
 <style scoped>
 .pet-select-group, .cage-select-group { width: 100%; }
-.pet-option, .cage-option, .service-option {
+.pet-option, .cage-option {
   border: 2px solid #e4e7ed;
   border-radius: 8px;
   padding: 16px;
@@ -242,11 +248,16 @@ onMounted(async () => {
   text-align: center;
   margin-bottom: 8px;
 }
-.pet-option:hover, .cage-option:hover, .service-option:hover { border-color: #409eff; }
-.pet-option.selected, .cage-option.selected, .service-option.selected {
-  border-color: #409eff;
-  background: #ecf5ff;
+.service-option {
+  border: 2px solid #e4e7ed;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 8px;
 }
+.pet-option:hover, .cage-option:hover, .service-option:hover { border-color: #409eff; }
+.pet-option.selected, .cage-option.selected { border-color: #409eff; background: #ecf5ff; }
+.service-option.selected { border-color: #409eff; background: #ecf5ff; }
 .cage-option.disabled { opacity: 0.5; cursor: not-allowed; }
 .cage-type-badge {
   display: inline-block;
@@ -262,6 +273,30 @@ onMounted(async () => {
 .price { color: #f56c6c; font-size: 20px; font-weight: bold; }
 .price span { font-size: 12px; font-weight: normal; }
 .desc { font-size: 12px; color: #909399; margin-top: 8px; }
-.pet-option h4, .cage-option h4, .service-option h4 { margin: 0 0 8px 0; }
-.pet-option p, .cage-option p, .service-option p { margin: 4px 0; font-size: 13px; color: #606266; }
+.pet-option h4, .cage-option h4 { margin: 0 0 8px 0; }
+.pet-option p, .cage-option p { margin: 4px 0; font-size: 13px; color: #606266; }
+.service-option {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 20px;
+}
+.svc-name { font-weight: bold; font-size: 15px; min-width: 80px; }
+.svc-price { color: #f56c6c; font-size: 18px; font-weight: bold; min-width: 80px; }
+.svc-desc { color: #909399; font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.svc-duration { color: #606266; font-size: 13px; white-space: nowrap; }
+.svc-check { color: #409eff; font-size: 20px; }
+.pet-avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 8px;
+  border: 2px solid #e4e7ed;
+}
+.pet-avatar-placeholder {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: #f5f7fa;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px;
+  margin: 0 auto 8px;
+}
 </style>

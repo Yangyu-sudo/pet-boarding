@@ -19,7 +19,7 @@
               {{ pet.type === 'DOG' ? '🐶 狗' : pet.type === 'CAT' ? '🐱 猫' : '🐾 其他' }}
             </el-tag>
             <p>品种：{{ pet.breed || '未设置' }}</p>
-            <p>年龄：{{ pet.age }}个月 | 体重：{{ pet.weight }}kg</p>
+            <p>年龄：{{ formatAge(pet.age) }} | 体重：{{ pet.weight }}kg</p>
           </div>
         </el-card>
       </el-col>
@@ -34,6 +34,12 @@ import { ref, onMounted } from 'vue'
 import { getPetList } from '@/api/pet'
 
 const pets = ref([])
+
+function formatAge(months) {
+  if (months == null) return '-'
+  if (months >= 12 && months % 12 === 0) return (months / 12) + '年'
+  return months + '个月'
+}
 
 async function fetchPets() {
   try {

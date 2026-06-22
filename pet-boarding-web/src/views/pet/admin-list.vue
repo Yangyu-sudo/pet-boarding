@@ -35,7 +35,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="breed" label="品种" width="120" />
-        <el-table-column prop="age" label="年龄(月)" width="80" />
+        <el-table-column label="年龄" width="80">
+          <template #default="{ row }">{{ formatAge(row.age) }}</template>
+        </el-table-column>
         <el-table-column prop="weight" label="体重(kg)" width="80" />
         <el-table-column prop="ownerId" label="主人ID" width="80" />
         <el-table-column label="操作" width="150" fixed="right">
@@ -66,7 +68,7 @@
         <el-descriptions-item label="名称">{{ currentPet.name }}</el-descriptions-item>
         <el-descriptions-item label="类型">{{ currentPet.type }}</el-descriptions-item>
         <el-descriptions-item label="品种">{{ currentPet.breed }}</el-descriptions-item>
-        <el-descriptions-item label="年龄">{{ currentPet.age }}个月</el-descriptions-item>
+        <el-descriptions-item label="年龄">{{ formatAge(currentPet.age) }}</el-descriptions-item>
         <el-descriptions-item label="性别">{{ currentPet.gender }}</el-descriptions-item>
         <el-descriptions-item label="体重">{{ currentPet.weight }}kg</el-descriptions-item>
         <el-descriptions-item label="病史" :span="2">{{ currentPet.medicalHistory || '无' }}</el-descriptions-item>
@@ -88,6 +90,12 @@ const size = ref(10)
 const total = ref(0)
 const detailVisible = ref(false)
 const currentPet = ref(null)
+
+function formatAge(months) {
+  if (months == null) return '-'
+  if (months >= 12 && months % 12 === 0) return (months / 12) + '年'
+  return months + '个月'
+}
 
 const searchForm = reactive({ name: '', type: '' })
 

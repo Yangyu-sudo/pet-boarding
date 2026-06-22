@@ -12,7 +12,7 @@
           <el-tag>{{ pet.type === 'DOG' ? '狗' : pet.type === 'CAT' ? '猫' : '其他' }}</el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="品种">{{ pet.breed || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="年龄">{{ pet.age }} 个月</el-descriptions-item>
+        <el-descriptions-item label="年龄">{{ formatAge(pet.age) }}</el-descriptions-item>
         <el-descriptions-item label="性别">{{ pet.gender === 'MALE' ? '公' : pet.gender === 'FEMALE' ? '母' : '-' }}</el-descriptions-item>
         <el-descriptions-item label="体重">{{ pet.weight }} kg</el-descriptions-item>
         <el-descriptions-item label="创建时间">{{ pet.createTime }}</el-descriptions-item>
@@ -36,6 +36,12 @@ import { getPetById } from '@/api/pet'
 const route = useRoute()
 const pet = ref({})
 const loading = ref(false)
+
+function formatAge(months) {
+  if (months == null) return '-'
+  if (months >= 12 && months % 12 === 0) return (months / 12) + '年'
+  return months + '个月'
+}
 
 onMounted(async () => {
   loading.value = true

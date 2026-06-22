@@ -18,8 +18,14 @@
         <el-form-item label="品种" prop="breed">
           <el-input v-model="form.breed" placeholder="请输入品种" />
         </el-form-item>
-        <el-form-item label="年龄(月)">
-          <el-input-number v-model="form.age" :min="0" :max="300" />
+        <el-form-item label="年龄">
+          <div style="display: flex; gap: 8px;">
+            <el-input v-model.number="form.ageValue" placeholder="请输入年龄" style="width: 200px" />
+            <el-select v-model="form.ageUnit" style="width: 100px">
+              <el-option label="月" value="month" />
+              <el-option label="年" value="year" />
+            </el-select>
+          </div>
         </el-form-item>
         <el-form-item label="性别">
           <el-radio-group v-model="form.gender">
@@ -27,8 +33,14 @@
             <el-radio value="FEMALE">♀ 母</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="体重(kg)">
-          <el-input-number v-model="form.weight" :min="0" :precision="2" :step="0.1" />
+        <el-form-item label="体重">
+          <div style="display: flex; gap: 8px;">
+            <el-input v-model.number="form.weightValue" placeholder="请输入体重" style="width: 200px" />
+            <el-select v-model="form.weightUnit" style="width: 100px">
+              <el-option label="kg" value="kg" />
+              <el-option label="g" value="g" />
+            </el-select>
+          </div>
         </el-form-item>
         <el-form-item label="照片">
           <el-upload
@@ -75,9 +87,11 @@ const form = reactive({
   name: '',
   type: 'DOG',
   breed: '',
-  age: null,
+  ageValue: null,
+  ageUnit: 'month',
   gender: '',
-  weight: null,
+  weightValue: null,
+  weightUnit: 'kg',
   photo: '',
   medicalHistory: '',
   notes: ''
@@ -94,7 +108,28 @@ onMounted(async () => {
     isEdit.value = true
     try {
       const res = await getPetById(id)
-      Object.assign(form, res.data)
+      const data = res.data
+      if (data.age != null) {
+        // 后端存的是月，转换为用户友好的展示
+        if (data.age >= 12 && data.age % 12 === 0) {
+          data.ageValue = data.age / 12
+          data.ageUnit = 'year'
+        } else {
+          data.ageValue = data.age
+          data.ageUnit = 'month'
+        }
+      }
+      if (data.weight != null) {
+        // 后端存的是kg，默认按kg展示，小于1kg时按g展示
+        if (data.weight < 1 && data.weight > 0) {
+          data.weightValue = data.weight * 1000
+          data.weightUnit = 'g'
+        } else {
+          data.weightValue = data.weight
+          data.weightUnit = 'kg'
+        }
+      }
+      Object.assign(form, data)
     } catch {}
   }
 })
@@ -123,11 +158,23 @@ async function handleSubmit() {
 
   submitting.value = true
   try {
+    const payload = { ...form }
+    payload.age = form.ageValue != null
+      ? (form.ageUnit === 'year' ? form.ageValue * 12 : form.ageValue)
+      : null
+    payload.weight = form.weightValue != null
+      ? (form.weightUnit === 'g' ? form.weightValue / 1000 : form.weightValue)
+      : null
+    delete payload.ageValue
+    delete payload.ageUnit
+    delete payload.weightValue
+    delete payload.weightUnit
+
     if (isEdit.value) {
-      await updatePet(route.params.id, form)
+      await updatePet(route.params.id, payload)
       ElMessage.success('更新成功')
     } else {
-      await addPet(form)
+      await addPet(payload)
       ElMessage.success('添加成功')
     }
     router.push('/customer/pets')
